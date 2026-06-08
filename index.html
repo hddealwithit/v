@@ -5,121 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic YouTube Player</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            text-align: center;
-            padding: 25px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-        .input-group {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        button:hover {
-            background-color: #cc0000;
-        }
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 5px;
-            background: #000;
-            display: none; /* Hidden until a video is loaded */
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f9; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { text-align: center; padding: 25px; border-radius: 10px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 600px; width: 100%; }
+        .input-group { margin-bottom: 20px; display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        button { padding: 10px 20px; background-color: #ff0000; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        button:hover { background-color: #cc0000; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 5px; background: #000; display: none; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Custom YouTube Player</h2>
-        <p>Paste a YouTube URL or Video ID below:</p>
-        
-        <div class="input-group">
-            <input type="text" id="videoInput" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-            <button onclick="loadVideo()">Load Video</button>
-        </div>
-
-        <div class="video-container" id="videoWrapper">
-            <iframe id="videoPlayer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
+<div class="container">
+    <h2>Custom YouTube Player</h2>
+    <p>Paste a YouTube URL or Video ID below:</p>
+    <div class="input-group">
+        <input type="text" id="videoInput" placeholder="e.g., https://youtube.com">
+        <button onclick="loadVideo()">Play</button>
     </div>
+    
+    <div class="video-container" id="videoContainer">
+        <iframe id="videoIframe" src="" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+</div>
 
-    <script>
-        function loadVideo() {
-            const input = document.getElementById('videoInput').value.trim();
-            const player = document.getElementById('videoPlayer');
-            const wrapper = document.getElementById('videoWrapper');
-            
-            let videoId = '';
+<script>
+function loadVideo() {
+    const input = document.getElementById('videoInput').value.trim();
+    const container = document.getElementById('videoContainer');
+    const iframe = document.getElementById('videoIframe');
 
-            // Check if the input is a full URL or just the ID
-            if (input.includes('youtube.com') || input.includes('youtu.be')) {
-                // Regex to extract the video ID from standard or shortened YouTube links
-                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-                const match = input.match(regExp);
-                
-                if (match && match[2].length === 11) {
-                    videoId = match[2];
-                } else {
-                    alert('Could not parse the YouTube URL. Please make sure it is a valid link.');
-                    return;
-                }
-            } else if (input.length === 11) {
-                // Assume it's a direct video ID if it's exactly 11 characters
-                videoId = input;
-            } else {
-                alert('Please enter a valid YouTube URL or an 11-character Video ID.');
-                return;
-            }
+    if (!input) return alert("Please enter a URL or Video ID");
 
-            // Set the iframe source to the secure embed URL format
-            player.src = "https://www.youtube.com/embed/" + videoId;
-            
-            // Show the video container
-            wrapper.style.display = 'block';
-        }
-    </script>
+    // Extract Video ID using a Regex to handle both full URLs and short IDs
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = input.match(regExp);
+    const videoId = (match && match[2].length == 11) ? match[2] : input;
+
+    if (videoId.length !== 11) {
+        alert("Invalid YouTube URL or ID");
+        return;
+    }
+
+    // Set the proper embed source
+    const embedUrl = `https://youtube.com{videoId}?autoplay=1`;
+    iframe.src = embedUrl;
+    
+    // Show the video container
+    container.style.display = 'block';
+}
+</script>
 
 </body>
 </html>
