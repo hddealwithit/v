@@ -3,46 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Link Project</title>
+    <title>Dynamic YouTube Player</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f9f9f9;
+            min-height: 100vh;
+            background-color: #f4f4f9;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             text-align: center;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: 10px;
             background: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
         }
-        .youtube-link {
-            display: inline-block;
-            margin-top: 15px;
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
             padding: 10px 20px;
             background-color: #ff0000;
             color: white;
-            text-decoration: none;
-            border-radius: 4px;
+            border: none;
+            border-radius: 5px;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .youtube-link:hover {
+        button:hover {
             background-color: #cc0000;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 5px;
+            background: #000;
+            display: none; /* Hidden until a video is loaded */
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Welcome to My Project</h2>
-        <p>Click the button below to visit YouTube.</p>
-        <a href="https://www.youtube.com" target="_blank" class="youtube-link">Go to YouTube</a>
+        <h2>Custom YouTube Player</h2>
+        <p>Paste a YouTube URL or Video ID below:</p>
+        
+        <div class="input-group">
+            <input type="text" id="videoInput" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+            <button onclick="loadVideo()">Load Video</button>
+        </div>
+
+        <div class="video-container" id="videoWrapper">
+            <iframe id="videoPlayer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
     </div>
+
+    <script>
+        function loadVideo() {
+            const input = document.getElementById('videoInput').value.trim();
+            const player = document.getElementById('videoPlayer');
+            const wrapper = document.getElementById('videoWrapper');
+            
+            let videoId = '';
+
+            // Check if the input is a full URL or just the ID
+            if (input.includes('youtube.com') || input.includes('youtu.be')) {
+                // Regex to extract the video ID from standard or shortened YouTube links
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = input.match(regExp);
+                
+                if (match && match[2].length === 11) {
+                    videoId = match[2];
+                } else {
+                    alert('Could not parse the YouTube URL. Please make sure it is a valid link.');
+                    return;
+                }
+            } else if (input.length === 11) {
+                // Assume it's a direct video ID if it's exactly 11 characters
+                videoId = input;
+            } else {
+                alert('Please enter a valid YouTube URL or an 11-character Video ID.');
+                return;
+            }
+
+            // Set the iframe source to the secure embed URL format
+            player.src = "https://www.youtube.com/embed/" + videoId;
+            
+            // Show the video container
+            wrapper.style.display = 'block';
+        }
+    </script>
 
 </body>
 </html>
